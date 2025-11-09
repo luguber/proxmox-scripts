@@ -151,7 +151,7 @@ step_start "Openresty"
   fi
 
   pkg_update
-  pkg_add openresty
+#  pkg_add openresty
   ln -sf /usr/local/openresty/nginx/sbin/nginx /usr/sbin/nginx
   ln -sf /usr/local/openresty/nginx/ /etc/nginx
   OPENRESTY_VERSION=$(openresty -v 2>&1 | grep -o '[0-9.]*$')
