@@ -147,7 +147,7 @@ step_start "Openresty"
     else
       source+="main"
     fi
-    printf "$source" | tee /etc/apt/sources.list.d/openresty.list >$__OUTPUT
+ #   printf "$source" | tee /etc/apt/sources.list.d/openresty.list >$__OUTPUT
   fi
 
   pkg_update
