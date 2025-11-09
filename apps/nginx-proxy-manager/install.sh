@@ -136,19 +136,19 @@ step_start "Openresty"
 #  else
 #    os_fetch -O- https://openresty.org/package/pubkey.gpg | gpg --yes --dearmor -o /usr/share/keyrings/openresty.gpg &>$__OUTPUT
 
-    repository=http://openresty.org/package/$EPS_OS_DISTRO
-    if [ "$EPS_OS_ARCH" != "amd64" ]; then
-      repository=http://openresty.org/package/$EPS_OS_ARCH/$EPS_OS_DISTRO
-    fi
+#    repository=http://openresty.org/package/$EPS_OS_DISTRO
+#    if [ "$EPS_OS_ARCH" != "amd64" ]; then
+#      repository=http://openresty.org/package/$EPS_OS_ARCH/$EPS_OS_DISTRO
+#    fi
 
-    source="deb [arch=$EPS_OS_ARCH signed-by=/usr/share/keyrings/openresty.gpg] $repository $EPS_OS_CODENAME "
-    if [ "$EPS_OS_DISTRO" = "debian" ]; then
-      source+="openresty"
-    else
-      source+="main"
-    fi
+#    source="deb [arch=$EPS_OS_ARCH signed-by=/usr/share/keyrings/openresty.gpg] $repository $EPS_OS_CODENAME "
+#    if [ "$EPS_OS_DISTRO" = "debian" ]; then
+#      source+="openresty"
+#    else
+#      source+="main"
+#    fi
  #   printf "$source" | tee /etc/apt/sources.list.d/openresty.list >$__OUTPUT
-  fi
+#  fi
 
   pkg_update
 #  pkg_add openresty
