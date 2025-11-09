@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-export EPS_BASE_URL=${EPS_BASE_URL:-https://raw.githubusercontent.com/luguber/proxmox-scripts/refs/heads/}
+export EPS_BASE_URL=${EPS_BASE_URL:-https://raw.githubusercontent.com/luguber/proxmox-scripts/refs/heads/main}
 export EPS_CT_INSTALL=false
 
 CLR_RD="\033[0;31m"
