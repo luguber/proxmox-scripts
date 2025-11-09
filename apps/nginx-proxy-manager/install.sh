@@ -150,8 +150,8 @@ step_start "Openresty"
  #   printf "$source" | tee /etc/apt/sources.list.d/openresty.list >$__OUTPUT
 #  fi
 
-  pkg_update
-  pkg_add openresty
+  apk update
+  apk add openresty
   ln -sf /usr/local/openresty/nginx/sbin/nginx /usr/sbin/nginx
   ln -sf /usr/local/openresty/nginx/ /etc/nginx
   ln -sf /usr/sbin/nginx /usr/bin/openresty
