@@ -280,7 +280,7 @@ step_start "Frontend" "Building" "Built"
   export NODE_ENV=development
   yarn cache clean --silent --force >$__OUTPUT
   yarn install --silent --network-timeout=30000 >$__OUTPUT 
-  yarn run build:legacy > $__OUTPUT
+  NODE_OPTIONS="--openssl-legacy-provider --max-old-space-size=4096" yarn build > $__OUTPUT
  # yarn build >$__OUTPUT 
   cp -r dist/* /app/frontend
  # cp -r app-images/* /app/frontend/images
