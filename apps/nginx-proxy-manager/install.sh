@@ -11,7 +11,7 @@ if [ -z "$EPS_BASE_URL" -o -z "$EPS_OS_DISTRO" -o -z "$EPS_UTILS_COMMON" -o -z "
   printf "Script looded incorrectly!\n\n";
   exit 1;
 fi
-# Update 29
+# Update 30
 source <(echo -n "$EPS_UTILS_COMMON")
 source <(echo -n "$EPS_UTILS_DISTRO")
 source <(echo -n "$EPS_APP_CONFIG")
@@ -269,8 +269,8 @@ step_start "Enviroment" "Setting up" "Setup"
 step_start "Frontend" "Building" "Built"
   cd ./frontend
   export NODE_ENV=development
-  yarn cache clean --silent --force >$__OUTPUT
-  yarn install --silent --network-timeout=30000 >$__OUTPUT 
+  yarn dlx @yarnpkg/core@4 cache clean --silent --force >$__OUTPUT
+  yarn install --immutable --network-timeout=30000 >$__OUTPUT 
   NODE_OPTIONS="--max-old-space-size=4096" yarn build > $__OUTPUT || { echo "✘ Frontend build failed"; exit 1; }
   cp -r dist/* /app/frontend
   
@@ -282,7 +282,7 @@ step_start "Backend" "Initializing" "Initialized"
   fi
   cd /app
   export NODE_ENV=development
-  yarn install --silent --network-timeout=30000 >$__OUTPUT 
+  yarn install --immutable --network-timeout=30000 >$__OUTPUT 
 
 step_start "Services" "Starting" "Started"
   printf "$EPS_SERVICE_DATA\n" | tee $EPS_SERVICE_FILE >$__OUTPUT
@@ -292,7 +292,7 @@ step_start "Services" "Starting" "Started"
   svc_add npm
 
 step_start "Enviroment" "Cleaning" "Cleaned"
-  yarn cache clean --silent --force >$__OUTPUT
+  yarn dlx @yarnpkg/core@4 cache clean --silent --force >$__OUTPUT
   # find /tmp -mindepth 1 -maxdepth 1 -not -name nginx -exec rm -rf '{}' \;
   if [ "$EPS_CLEANUP" = true ]; then
     pkg_del "$EPS_DEPENDENCIES"
