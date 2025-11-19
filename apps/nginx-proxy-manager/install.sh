@@ -11,7 +11,7 @@ if [ -z "$EPS_BASE_URL" -o -z "$EPS_OS_DISTRO" -o -z "$EPS_UTILS_COMMON" -o -z "
   printf "Script looded incorrectly!\n\n";
   exit 1;
 fi
-# Update 33
+# Update 34
 source <(echo -n "$EPS_UTILS_COMMON")
 source <(echo -n "$EPS_UTILS_DISTRO")
 source <(echo -n "$EPS_APP_CONFIG")
@@ -210,6 +210,9 @@ step_start "Nginx Proxy Manager" "Downloading" "Downloaded"
   NPM_VERSION=$(os_fetch -O- https://api.github.com/repos/NginxProxyManager/nginx-proxy-manager/releases/latest | grep "tag_name" | awk '{print substr($2, 3, length($2)-4) }')
   os_fetch -O- https://codeload.github.com/NginxProxyManager/nginx-proxy-manager/tar.gz/v$NPM_VERSION | tar -xz
   cd ./nginx-proxy-manager-$NPM_VERSION
+  # Fix JSON imports for Vite + TypeScript (required since v2.13.0)
+  sed -i 's/"resolveJsonModule": false/"resolveJsonModule": true/g' ./frontend/tsconfig.json || \
+  sed -i '/"compilerOptions": {/a\    "resolveJsonModule": true,' ./frontend/tsconfig.json
   step_end "Nginx Proxy Manager ${CLR_CYB}v$NPM_VERSION${CLR} ${CLR_GN}Downloaded"
 
 step_start "Enviroment" "Setting up" "Setup"
