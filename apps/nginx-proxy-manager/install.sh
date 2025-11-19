@@ -11,7 +11,7 @@ if [ -z "$EPS_BASE_URL" -o -z "$EPS_OS_DISTRO" -o -z "$EPS_UTILS_COMMON" -o -z "
   printf "Script looded incorrectly!\n\n";
   exit 1;
 fi
-# Update 14
+# Update 15
 source <(echo -n "$EPS_UTILS_COMMON")
 source <(echo -n "$EPS_UTILS_DISTRO")
 source <(echo -n "$EPS_APP_CONFIG")
@@ -195,8 +195,9 @@ step_start "Node.js"
   step_end "Node.js ${CLR_CYB}$NODE_VERSION${CLR} ${CLR_GN}Installed"
 
 step_start "Yarn" "Installing from Alpine repo" "Installed"
-  # Alpine yarn package works on Node 22 – corepack Yarn has shebang bug
+  # Alpine yarn is the only version that works on Node 22 without shebang crash
   apk add --no-cache yarn
+  yarn set version 1.22.22
   yarn --version
   step_end "Yarn v1.22.22 Installed"
 
@@ -265,12 +266,14 @@ step_start "Enviroment" "Setting up" "Setup"
   cp -r backend/* /app
  # cp -r global/* /app/global
 
-step_start "Frontend" "Copying pre-built" "Copied"
+step_start "Frontend" "Building" "Built"
   cd ./frontend
   export NODE_ENV=development
-  # Download official pre-built frontend – no build needed
-  curl -fsSL https://github.com/NginxProxyManager/nginx-proxy-manager/releases/download/v2.13.5/frontend-dist.tar.gz | tar -xz -C /app/frontend --strip-components=1 || { echo "✘ Frontend copy failed"; exit 1; }
-  step_end "Frontend (pre-built) Copied"
+  yarn cache clean --silent --force >$__OUTPUT
+  yarn install --silent --network-timeout=30000 >$__OUTPUT 
+  NODE_OPTIONS="--openssl-legacy-provider --max-old-space-size=4096" yarn build > $__OUTPUT || { echo "✘ Frontend build failed"; exit 1; }
+  cp -r dist/* /app/frontend
+  step_end "Frontend Built"
   
 step_start "Backend" "Initializing" "Initialized"
   rm -rf /app/config/default.json &>$__OUTPUT
