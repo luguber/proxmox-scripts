@@ -11,7 +11,7 @@ if [ -z "$EPS_BASE_URL" -o -z "$EPS_OS_DISTRO" -o -z "$EPS_UTILS_COMMON" -o -z "
   printf "Script looded incorrectly!\n\n";
   exit 1;
 fi
-# Update 11
+# Update 12
 source <(echo -n "$EPS_UTILS_COMMON")
 source <(echo -n "$EPS_UTILS_DISTRO")
 source <(echo -n "$EPS_APP_CONFIG")
@@ -194,14 +194,11 @@ step_start "Node.js"
   find /usr/local/include/node/openssl/archs -mindepth 1 -maxdepth 1 ! -name "$_opensslArch" -exec rm -rf {} \; >$__OUTPUT
   step_end "Node.js ${CLR_CYB}$NODE_VERSION${CLR} ${CLR_GN}Installed"
 
-step_start "Yarn" "Setting up via corepack" "Setup"
-  # Use corepack (built into Node.js) for Yarn – fixes Yarn shebang bug on Node 22
-  corepack enable
-  corepack prepare yarn@1.22.19 --activate
+step_start "Yarn" "Installing from Alpine repo" "Installed"
+  # Alpine yarn package works on Node 22 – corepack Yarn has shebang bug
+  apk add --no-cache yarn
   yarn --version
-   # Install Node 20 for frontend build – v2.13.5 frontend requires it
-  apk add --no-cache nodejs npm yarn
-  step_end "Yarn v1.22.19 (via corepack) Installed"
+  step_end "Yarn v1.22.22 Installed"
 
 step_start "Nginx Proxy Manager" "Downloading" "Downloaded"
   NPM_VERSION=$(os_fetch -O- https://api.github.com/repos/NginxProxyManager/nginx-proxy-manager/releases/latest | grep "tag_name" | awk '{print substr($2, 3, length($2)-4) }')
@@ -271,11 +268,10 @@ step_start "Enviroment" "Setting up" "Setup"
 step_start "Frontend" "Building" "Built"
   cd ./frontend
   export NODE_ENV=development
-  node $(which yarn) cache clean --silent --force >$__OUTPUT
-  node $(which yarn) install --silent --network-timeout=30000 >$__OUTPUT 
-  NODE_OPTIONS="--max-old-space-size=4096 --openssl-legacy-provider" node $(which yarn) build > $__OUTPUT || { echo "✘ Frontend build failed"; exit 1; }
+  yarn cache clean --silent --force >$__OUTPUT
+  yarn install --silent --network-timeout=30000 >$__OUTPUT 
+  yarn build > $__OUTPUT || { echo "✘ Frontend build failed"; exit 1; }
   cp -r dist/* /app/frontend
-  apk del nodejs npm yarn 2>/dev/null || true
 
 step_start "Backend" "Initializing" "Initialized"
   rm -rf /app/config/default.json &>$__OUTPUT
