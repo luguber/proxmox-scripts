@@ -11,7 +11,7 @@ if [ -z "$EPS_BASE_URL" -o -z "$EPS_OS_DISTRO" -o -z "$EPS_UTILS_COMMON" -o -z "
   printf "Script looded incorrectly!\n\n";
   exit 1;
 fi
-# Update 16
+# Update 17
 source <(echo -n "$EPS_UTILS_COMMON")
 source <(echo -n "$EPS_UTILS_DISTRO")
 source <(echo -n "$EPS_APP_CONFIG")
@@ -270,9 +270,9 @@ step_start "Frontend" "Building" "Built"
   cd ./frontend
   export NODE_ENV=development
   yarn cache clean --silent --force >$__OUTPUT
-  yarn install --silent --network-timeout=30000 >$__OUTPUT yarn build > $__OUTPUT || { echo "✘ Frontend build failed"; exit 1; }
+  yarn install --check-files --silent --network-timeout=30000 >$__OUTPUT 
+  yarn build > $__OUTPUT || { echo "✘ Frontend build failed"; exit 1; }
   cp -r dist/* /app/frontend
-  step_end "Frontend Built"
   
 step_start "Backend" "Initializing" "Initialized"
   rm -rf /app/config/default.json &>$__OUTPUT
@@ -282,7 +282,7 @@ step_start "Backend" "Initializing" "Initialized"
   fi
   cd /app
   export NODE_ENV=development
-  node $(which yarn) install --silent --network-timeout=30000 >$__OUTPUT 
+  yarn install --check-files --silent --network-timeout=30000 >$__OUTPUT 
 
 step_start "Services" "Starting" "Started"
   printf "$EPS_SERVICE_DATA\n" | tee $EPS_SERVICE_FILE >$__OUTPUT
