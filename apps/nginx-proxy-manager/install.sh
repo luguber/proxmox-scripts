@@ -11,7 +11,7 @@ if [ -z "$EPS_BASE_URL" -o -z "$EPS_OS_DISTRO" -o -z "$EPS_UTILS_COMMON" -o -z "
   printf "Script looded incorrectly!\n\n";
   exit 1;
 fi
-# Update 30
+# Update 31
 source <(echo -n "$EPS_UTILS_COMMON")
 source <(echo -n "$EPS_UTILS_DISTRO")
 source <(echo -n "$EPS_APP_CONFIG")
@@ -266,13 +266,13 @@ step_start "Enviroment" "Setting up" "Setup"
   cp -r backend/* /app
  # cp -r global/* /app/global
 
-step_start "Frontend" "Building" "Built"
-  cd ./frontend
-  export NODE_ENV=development
-  yarn dlx @yarnpkg/core@4 cache clean --silent --force >$__OUTPUT
-  yarn install --immutable --network-timeout=30000 >$__OUTPUT 
-  NODE_OPTIONS="--max-old-space-size=4096" yarn build > $__OUTPUT || { echo "✘ Frontend build failed"; exit 1; }
-  cp -r dist/* /app/frontend
+step_start "Frontend" "Using pre-built (official)" "Copied"
+  # Official pre-built frontend from jc21's CI – no local build required
+  mkdir -p /app/frontend
+  curl -fsSL https://github.com/NginxProxyManager/nginx-proxy-manager/releases/download/v2.13.5/frontend-dist.tar.gz \
+    | tar -xz -C /app/frontend --strip-components=1 \
+    || { echo "Failed to download pre-built frontend"; exit 1; }
+  step_end "Frontend (pre-built) Copied"
   
 step_start "Backend" "Initializing" "Initialized"
   rm -rf /app/config/default.json &>$__OUTPUT
@@ -290,14 +290,6 @@ step_start "Services" "Starting" "Started"
 
   svc_add openresty
   svc_add npm
-
-step_start "Enviroment" "Cleaning" "Cleaned"
-  yarn dlx @yarnpkg/core@4 cache clean --silent --force >$__OUTPUT
-  # find /tmp -mindepth 1 -maxdepth 1 -not -name nginx -exec rm -rf '{}' \;
-  if [ "$EPS_CLEANUP" = true ]; then
-    pkg_del "$EPS_DEPENDENCIES"
-  fi
-  pkg_clean
 
 step_end "Installation complete"
 printf "\nNginx Proxy Manager should be reachable at ${CLR_CYB}http://$(os_ip):81${CLR}\n\n"
