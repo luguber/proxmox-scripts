@@ -210,6 +210,10 @@ step_start "Yarn"
   rm -rf "$GNUPGHOME" yarn-v$YARN_VERSION.tar.gz.asc yarn-v$YARN_VERSION.tar.gz
   step_end "Yarn ${CLR_CYB}v$YARN_VERSION${CLR} ${CLR_GN}Installed"
 
+  # Install Node 20 side-by-side for frontend build (required for NPM v2.13.4+)
+  echo "Installing Node.js 20 for frontend build compatibility..."
+  apk add --no-cache nodejs@20 npm@20 yarn@20
+
 step_start "Nginx Proxy Manager" "Downloading" "Downloaded"
   NPM_VERSION=$(os_fetch -O- https://api.github.com/repos/NginxProxyManager/nginx-proxy-manager/releases/latest | grep "tag_name" | awk '{print substr($2, 3, length($2)-4) }')
   os_fetch -O- https://codeload.github.com/NginxProxyManager/nginx-proxy-manager/tar.gz/v$NPM_VERSION | tar -xz
@@ -280,9 +284,14 @@ step_start "Frontend" "Building" "Built"
   export NODE_ENV=development
   yarn cache clean --silent --force >$__OUTPUT
   yarn install --silent --network-timeout=30000 >$__OUTPUT 
-  NODE_OPTIONS="--openssl-legacy-provider --max-old-space-size=4096" yarn build > $__OUTPUT
+    # Build frontend with Node 20 (fixes v2.13.5 on Node 22 runtime)
+  echo "Building frontend with Node 20..."
+  NODE_OPTIONS="--max-old-space-size=4096 --openssl-legacy-provider" \
+      /usr/bin/node20 /usr/bin/yarn build > $__OUTPUT || { echo "✘ Frontend build failed"; exit 1; }
  # yarn build >$__OUTPUT 
   cp -r dist/* /app/frontend
+    # Remove Node 20 after successful build – runtime stays on Node 22
+  apk del nodejs@20 npm@20 yarn@20 2>/dev/null || true
  # cp -r app-images/* /app/frontend/images
 
 step_start "Backend" "Initializing" "Initialized"
