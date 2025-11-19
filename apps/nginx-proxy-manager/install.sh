@@ -11,7 +11,7 @@ if [ -z "$EPS_BASE_URL" -o -z "$EPS_OS_DISTRO" -o -z "$EPS_UTILS_COMMON" -o -z "
   printf "Script looded incorrectly!\n\n";
   exit 1;
 fi
-# Update 13
+# Update 14
 source <(echo -n "$EPS_UTILS_COMMON")
 source <(echo -n "$EPS_UTILS_DISTRO")
 source <(echo -n "$EPS_APP_CONFIG")
@@ -265,14 +265,13 @@ step_start "Enviroment" "Setting up" "Setup"
   cp -r backend/* /app
  # cp -r global/* /app/global
 
-step_start "Frontend" "Building" "Built"
+step_start "Frontend" "Copying pre-built" "Copied"
   cd ./frontend
   export NODE_ENV=development
-  yarn cache clean --silent --force >$__OUTPUT
-  yarn install --silent --network-timeout=30000 >$__OUTPUT 
-  yarn build > $__OUTPUT || { echo "✘ Frontend build failed"; exit 1; }
-  cp -r dist/* /app/frontend
-
+  # Download official pre-built frontend – no build needed
+  curl -fsSL https://github.com/NginxProxyManager/nginx-proxy-manager/releases/download/v2.13.5/frontend-dist.tar.gz | tar -xz -C /app/frontend --strip-components=1 || { echo "✘ Frontend copy failed"; exit 1; }
+  step_end "Frontend (pre-built) Copied"
+  
 step_start "Backend" "Initializing" "Initialized"
   rm -rf /app/config/default.json &>$__OUTPUT
   if [ ! -f /app/config/production.json ]; then
