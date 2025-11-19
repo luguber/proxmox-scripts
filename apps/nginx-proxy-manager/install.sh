@@ -11,7 +11,7 @@ if [ -z "$EPS_BASE_URL" -o -z "$EPS_OS_DISTRO" -o -z "$EPS_UTILS_COMMON" -o -z "
   printf "Script looded incorrectly!\n\n";
   exit 1;
 fi
-# Update 1
+# Update 2
 source <(echo -n "$EPS_UTILS_COMMON")
 source <(echo -n "$EPS_UTILS_DISTRO")
 source <(echo -n "$EPS_APP_CONFIG")
@@ -210,8 +210,11 @@ step_start "Yarn"
   rm -rf "$GNUPGHOME" yarn-v$YARN_VERSION.tar.gz.asc yarn-v$YARN_VERSION.tar.gz
   step_end "Yarn ${CLR_CYB}v$YARN_VERSION${CLR} ${CLR_GN}Installed"
 
-  # Install Node 20 (default in Alpine 3.22) for frontend build – v2.13.4+ requires it
-  apk add --no-cache nodejs npm yarn
+# Use corepack-enabled Yarn (bundled with Node.js) instead of the broken Alpine yarn package
+# This avoids the Node 22 + Yarn 1.x shebang bug completely
+echo "Enabling corepack Yarn (fixes Yarn on Node 22)..."
+corepack enable
+corepack prepare yarn@1.22.19 --activate
 
 step_start "Nginx Proxy Manager" "Downloading" "Downloaded"
   NPM_VERSION=$(os_fetch -O- https://api.github.com/repos/NginxProxyManager/nginx-proxy-manager/releases/latest | grep "tag_name" | awk '{print substr($2, 3, length($2)-4) }')
