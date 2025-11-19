@@ -11,7 +11,7 @@ if [ -z "$EPS_BASE_URL" -o -z "$EPS_OS_DISTRO" -o -z "$EPS_UTILS_COMMON" -o -z "
   printf "Script looded incorrectly!\n\n";
   exit 1;
 fi
-# Update 35
+# Update 36
 source <(echo -n "$EPS_UTILS_COMMON")
 source <(echo -n "$EPS_UTILS_DISTRO")
 source <(echo -n "$EPS_APP_CONFIG")
@@ -278,10 +278,50 @@ step_start "Enviroment" "Setting up" "Setup"
 
 step_start "Frontend" "Building" "Built"
   cd ./frontend
+
+  # --- ONE-TIME PATCH THAT FIXES ALL JSON IMPORTS FOREVER ---
+  cat > tsconfig.json <<'EOF'
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "allowJs": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  },
+  "include": [
+    "src",
+    "src/locale/lang/**/*.json"
+  ],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}
+EOF
+  # ---------------------------------------------------------
+
   export NODE_ENV=development
-  yarn cache clean --force
+  yarn cache clean --all
   yarn install --frozen-lockfile
   NODE_OPTIONS="--max-old-space-size=4096 --openssl-legacy-provider --no-experimental-fetch" yarn build || { echo "Frontend build failed"; exit 1; }
+
   cp -r dist/* /app/frontend
   step_end "Frontend Built"
   
