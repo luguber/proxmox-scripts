@@ -11,7 +11,7 @@ if [ -z "$EPS_BASE_URL" -o -z "$EPS_OS_DISTRO" -o -z "$EPS_UTILS_COMMON" -o -z "
   printf "Script looded incorrectly!\n\n";
   exit 1;
 fi
-# Update 2
+# Update 3
 source <(echo -n "$EPS_UTILS_COMMON")
 source <(echo -n "$EPS_UTILS_DISTRO")
 source <(echo -n "$EPS_APP_CONFIG")
@@ -194,27 +194,12 @@ step_start "Node.js"
   find /usr/local/include/node/openssl/archs -mindepth 1 -maxdepth 1 ! -name "$_opensslArch" -exec rm -rf {} \; >$__OUTPUT
   step_end "Node.js ${CLR_CYB}$NODE_VERSION${CLR} ${CLR_GN}Installed"
 
-step_start "Yarn"
-  export GNUPGHOME="$(mktemp -d)"
-  for key in 6A010C5166006599AA17F08146C2130DFD2497F5; do
-    gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys "$key" || gpg --batch --keyserver keyserver.ubuntu.com --recv-keys "$key" ;
-  done
-
-  os_fetch -O yarn-v$YARN_VERSION.tar.gz https://yarnpkg.com/downloads/$YARN_VERSION/yarn-v$YARN_VERSION.tar.gz
-  os_fetch -O yarn-v$YARN_VERSION.tar.gz.asc https://yarnpkg.com/downloads/$YARN_VERSION/yarn-v$YARN_VERSION.tar.gz.asc
-  gpg -q --batch --verify yarn-v$YARN_VERSION.tar.gz.asc yarn-v$YARN_VERSION.tar.gz >$__OUTPUT
-  gpgconf --kill all
-  tar -xzf yarn-v$YARN_VERSION.tar.gz -C /opt/
-  ln -sf /opt/yarn-v$YARN_VERSION/bin/yarn /usr/local/bin/yarn
-  ln -sf /opt/yarn-v$YARN_VERSION/bin/yarnpkg /usr/local/bin/yarnpkg
-  rm -rf "$GNUPGHOME" yarn-v$YARN_VERSION.tar.gz.asc yarn-v$YARN_VERSION.tar.gz
-  step_end "Yarn ${CLR_CYB}v$YARN_VERSION${CLR} ${CLR_GN}Installed"
-
-# Use corepack-enabled Yarn (bundled with Node.js) instead of the broken Alpine yarn package
-# This avoids the Node 22 + Yarn 1.x shebang bug completely
-echo "Enabling corepack Yarn (fixes Yarn on Node 22)..."
-corepack enable
-corepack prepare yarn@1.22.19 --activate
+step_start "Yarn" "Setting up via corepack" "Setup"
+  # Use corepack (built into Node.js) for Yarn – fixes Yarn shebang bug on Node 22
+  corepack enable
+  corepack prepare yarn@1.22.19 --activate
+  yarn --version
+  step_end "Yarn v1.22.19 (via corepack) Installed"
 
 step_start "Nginx Proxy Manager" "Downloading" "Downloaded"
   NPM_VERSION=$(os_fetch -O- https://api.github.com/repos/NginxProxyManager/nginx-proxy-manager/releases/latest | grep "tag_name" | awk '{print substr($2, 3, length($2)-4) }')
@@ -286,10 +271,7 @@ step_start "Frontend" "Building" "Built"
   export NODE_ENV=development
   yarn cache clean --silent --force >$__OUTPUT
   yarn install --silent --network-timeout=30000 >$__OUTPUT 
-# Build frontend with Node 20 + extra memory (fixes v2.13.5 on Node 22 runtime)
-echo "Building frontend with Node 20..."
-NODE_OPTIONS="--max-old-space-size=4096 --openssl-legacy-provider" \
-    node /usr/bin/yarn build > $__OUTPUT || { echo "✘ Frontend build failed"; exit 1; }
+  yarn build > $__OUTPUT || { echo "✘ Frontend build failed"; exit 1; }
  # yarn build >$__OUTPUT 
   cp -r dist/* /app/frontend
 # Remove Node 20 packages after build – runtime stays on Node 22
