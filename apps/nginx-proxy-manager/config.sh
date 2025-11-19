@@ -21,7 +21,7 @@ EPS_CT_MEMORY=${EPS_CT_MEMORY:-512}
 EPS_CT_SWAP=${EPS_CT_SWAP:-0}
 # NPM package versions
 NODE_VERSION="v22.12.0"
-YARN_VERSION="latest-rc"
+YARN_VERSION="latest"
 RUST_VERSION="1.74.0"
 
 EPS_SERVICE_FILE=/etc/init.d/npm
