@@ -11,7 +11,7 @@ if [ -z "$EPS_BASE_URL" -o -z "$EPS_OS_DISTRO" -o -z "$EPS_UTILS_COMMON" -o -z "
   printf "Script looded incorrectly!\n\n";
   exit 1;
 fi
-# Update 28
+# Update 29
 source <(echo -n "$EPS_UTILS_COMMON")
 source <(echo -n "$EPS_UTILS_DISTRO")
 source <(echo -n "$EPS_APP_CONFIG")
@@ -194,19 +194,12 @@ step_start "Node.js"
   find /usr/local/include/node/openssl/archs -mindepth 1 -maxdepth 1 ! -name "$_opensslArch" -exec rm -rf {} \; >$__OUTPUT
   step_end "Node.js ${CLR_CYB}$NODE_VERSION${CLR} ${CLR_GN}Installed"
 
-step_start "Yarn"
-  export GNUPGHOME="$(mktemp -d)"
-  for key in 6A010C5166006599AA17F08146C2130DFD2497F5; do
-    gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys "$key" || gpg --batch --keyserver keyserver.ubuntu.com --recv-keys "$key" ;
-  done
-
-  os_fetch -O yarn-v$YARN_VERSION.tar.gz https://yarnpkg.com/downloads/$YARN_VERSION/yarn-v$YARN_VERSION.tar.gz
-  os_fetch -O yarn-v$YARN_VERSION.tar.gz.asc https://yarnpkg.com/downloads/$YARN_VERSION/yarn-v$YARN_VERSION.tar.gz.asc
-  tar -xzf yarn-v$YARN_VERSION.tar.gz -C /opt/
-  ln -sf /opt/yarn-v$YARN_VERSION/bin/yarn /usr/local/bin/yarn
-  ln -sf /opt/yarn-v$YARN_VERSION/bin/yarnpkg /usr/local/bin/yarnpkg
-  rm -rf "$GNUPGHOME" yarn-v$YARN_VERSION.tar.gz.asc yarn-v$YARN_VERSION.tar.gz
-  step_end "Yarn ${CLR_CYB}v$YARN_VERSION${CLR} ${CLR_GN}Installed"
+step_start "Yarn" "Setting up via corepack" "Setup"
+  # Use Yarn 4 via corepack – no shebang bug on Node 22, compatible with v2.13.5
+  corepack enable
+  corepack prepare yarn@4.5.1 --activate
+  yarn --version
+  step_end "Yarn v4.5.1 Installed"
 
 step_start "Nginx Proxy Manager" "Downloading" "Downloaded"
   NPM_VERSION=$(os_fetch -O- https://api.github.com/repos/NginxProxyManager/nginx-proxy-manager/releases/latest | grep "tag_name" | awk '{print substr($2, 3, length($2)-4) }')
@@ -277,8 +270,8 @@ step_start "Frontend" "Building" "Built"
   cd ./frontend
   export NODE_ENV=development
   yarn cache clean --silent --force >$__OUTPUT
-  yarn install --check-files --silent --network-timeout=30000 >$__OUTPUT 
-  NODE_OPTIONS="--max-old-space-size=4096 --openssl-legacy-provider" yarn build > $__OUTPUT || { echo "✘ Frontend build failed"; exit 1; }
+  yarn install --silent --network-timeout=30000 >$__OUTPUT 
+  NODE_OPTIONS="--max-old-space-size=4096" yarn build > $__OUTPUT || { echo "✘ Frontend build failed"; exit 1; }
   cp -r dist/* /app/frontend
   
 step_start "Backend" "Initializing" "Initialized"
@@ -289,7 +282,7 @@ step_start "Backend" "Initializing" "Initialized"
   fi
   cd /app
   export NODE_ENV=development
-  yarn install --check-files --silent --network-timeout=30000 >$__OUTPUT 
+  yarn install --silent --network-timeout=30000 >$__OUTPUT 
 
 step_start "Services" "Starting" "Started"
   printf "$EPS_SERVICE_DATA\n" | tee $EPS_SERVICE_FILE >$__OUTPUT
