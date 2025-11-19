@@ -11,7 +11,7 @@ if [ -z "$EPS_BASE_URL" -o -z "$EPS_OS_DISTRO" -o -z "$EPS_UTILS_COMMON" -o -z "
   printf "Script looded incorrectly!\n\n";
   exit 1;
 fi
-# Update 5
+# Update 6
 source <(echo -n "$EPS_UTILS_COMMON")
 source <(echo -n "$EPS_UTILS_DISTRO")
 source <(echo -n "$EPS_APP_CONFIG")
@@ -199,6 +199,8 @@ step_start "Yarn" "Setting up via corepack" "Setup"
   corepack enable
   corepack prepare yarn@1.22.19 --activate
   yarn --version
+   # Install Node 20 for frontend build – v2.13.5 frontend requires it
+  apk add --no-cache nodejs npm yarn
   step_end "Yarn v1.22.19 (via corepack) Installed"
 
 step_start "Nginx Proxy Manager" "Downloading" "Downloaded"
@@ -271,9 +273,10 @@ step_start "Frontend" "Building" "Built"
   export NODE_ENV=development
   yarn cache clean --silent --force >$__OUTPUT
   yarn install --silent --network-timeout=30000 >$__OUTPUT 
-  NODE_OPTIONS="--max-old-space-size=4096 --openssl-legacy-provider" yarn build > $__OUTPUT || { echo "✘ Frontend build failed"; exit 1; }
+  node /usr/bin/yarn build > $__OUTPUT || { echo "✘ Frontend build failed"; exit 1; }
  # yarn build >$__OUTPUT 
   cp -r dist/* /app/frontend
+  apk del nodejs npm yarn 2>/dev/null || true
  # cp -r app-images/* /app/frontend/images
 
 step_start "Backend" "Initializing" "Initialized"
