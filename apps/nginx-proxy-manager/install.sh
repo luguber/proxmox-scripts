@@ -11,7 +11,7 @@ if [ -z "$EPS_BASE_URL" -o -z "$EPS_OS_DISTRO" -o -z "$EPS_UTILS_COMMON" -o -z "
   printf "Script looded incorrectly!\n\n";
   exit 1;
 fi
-# Update 24
+# Update 25
 source <(echo -n "$EPS_UTILS_COMMON")
 source <(echo -n "$EPS_UTILS_DISTRO")
 source <(echo -n "$EPS_APP_CONFIG")
@@ -203,7 +203,7 @@ step_start "Yarn"
   #os_fetch -O yarn-v$YARN_VERSION.tar.gz https://yarnpkg.com/downloads/$YARN_VERSION/yarn-v$YARN_VERSION.tar.gz
   #os_fetch -O yarn-v$YARN_VERSION.tar.gz.asc https://yarnpkg.com/downloads/$YARN_VERSION/yarn-v$YARN_VERSION.tar.gz.asc
   os_fetch -O yarn-v$YARN_VERSION.tar.gz https://yarnpkg.com/$YARN_VERSION.tar.gz
-  os_fetch -O yarn-v$YARN_VERSION.tar.gz.asc https://yarnpkg.com/latest.tar.gz.asc
+  os_fetch -O yarn-v$YARN_VERSION.tar.gz.asc https://yarnpkg.com/$YARN_VERSION.tar.gz.asc
   gpg -q --batch --verify yarn-v$YARN_VERSION.tar.gz.asc yarn-v$YARN_VERSION.tar.gz >$__OUTPUT
   gpgconf --kill all
   tar -xzf yarn-v$YARN_VERSION.tar.gz -C /opt/
