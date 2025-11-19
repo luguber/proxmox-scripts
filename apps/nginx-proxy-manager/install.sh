@@ -11,7 +11,7 @@ if [ -z "$EPS_BASE_URL" -o -z "$EPS_OS_DISTRO" -o -z "$EPS_UTILS_COMMON" -o -z "
   printf "Script looded incorrectly!\n\n";
   exit 1;
 fi
-# Update 4
+# Update 5
 source <(echo -n "$EPS_UTILS_COMMON")
 source <(echo -n "$EPS_UTILS_DISTRO")
 source <(echo -n "$EPS_APP_CONFIG")
@@ -271,7 +271,7 @@ step_start "Frontend" "Building" "Built"
   export NODE_ENV=development
   yarn cache clean --silent --force >$__OUTPUT
   yarn install --silent --network-timeout=30000 >$__OUTPUT 
-  NODE_OPTIONS="--max-old-space-size=4096" yarn build > $__OUTPUT || { echo "✘ Frontend build failed"; exit 1; }
+  NODE_OPTIONS="--max-old-space-size=4096 --openssl-legacy-provider" yarn build > $__OUTPUT || { echo "✘ Frontend build failed"; exit 1; }
  # yarn build >$__OUTPUT 
   cp -r dist/* /app/frontend
  # cp -r app-images/* /app/frontend/images
