@@ -11,7 +11,7 @@ if [ -z "$EPS_BASE_URL" -o -z "$EPS_OS_DISTRO" -o -z "$EPS_UTILS_COMMON" -o -z "
   printf "Script looded incorrectly!\n\n";
   exit 1;
 fi
-# Update 19
+# Update 20
 source <(echo -n "$EPS_UTILS_COMMON")
 source <(echo -n "$EPS_UTILS_DISTRO")
 source <(echo -n "$EPS_APP_CONFIG")
@@ -195,11 +195,9 @@ step_start "Node.js"
   step_end "Node.js ${CLR_CYB}$NODE_VERSION${CLR} ${CLR_GN}Installed"
 
 step_start "Yarn" "Installing from Alpine repo" "Installed"
-  # Alpine yarn is the only version that works on Node 22 without shebang crash
-  apk add --no-cache yarn=1.22.22-r1
-  yarn set version 1.22.22
+  apk add --no-cache yarn
   yarn --version
-  step_end "Yarn v1.22.22-r1 Installed"
+  step_end "Yarn v1.22.22 Installed"
 
 step_start "Nginx Proxy Manager" "Downloading" "Downloaded"
   NPM_VERSION=$(os_fetch -O- https://api.github.com/repos/NginxProxyManager/nginx-proxy-manager/releases/latest | grep "tag_name" | awk '{print substr($2, 3, length($2)-4) }')
@@ -271,7 +269,7 @@ step_start "Frontend" "Building" "Built"
   export NODE_ENV=development
   yarn cache clean --silent --force >$__OUTPUT
   yarn install --check-files --silent --network-timeout=30000 >$__OUTPUT 
-  NODE_OPTIONS="--max-old-space-size=4096 --openssl-legacy-provider" yarn build > $__OUTPUT || exit 1
+  NODE_OPTIONS="--max-old-space-size=4096 --openssl-legacy-provider" yarn build > $__OUTPUT || { echo "✘ Frontend build failed"; exit 1; }
   cp -r dist/* /app/frontend
   
 step_start "Backend" "Initializing" "Initialized"
