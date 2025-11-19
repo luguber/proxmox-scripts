@@ -11,7 +11,7 @@ if [ -z "$EPS_BASE_URL" -o -z "$EPS_OS_DISTRO" -o -z "$EPS_UTILS_COMMON" -o -z "
   printf "Script looded incorrectly!\n\n";
   exit 1;
 fi
-# Update 38
+# Update 39
 source <(echo -n "$EPS_UTILS_COMMON")
 source <(echo -n "$EPS_UTILS_DISTRO")
 source <(echo -n "$EPS_APP_CONFIG")
@@ -279,13 +279,16 @@ step_start "Enviroment" "Setting up" "Setup"
 step_start "Frontend" "Building" "Built"
   cd ./frontend
 
-  # ← THIS IS THE ONLY LINE YOU NEED TO ADD ←
-  mkdir -p ./src/locale/lang && echo '{"type":"module"}' > ./src/locale/lang/package.json
+  # Force Vite 5 to treat JSON files as ESM modules – this is the real fix
+  mkdir -p src/locale/lang
+  echo '{"type":"module"}' > src/locale/lang/package.json
 
-  export NODE_ENV=development
-  yarn cache clean --all
-  yarn install --frozen-lockfile
-  NODE_OPTIONS="--max-old-space-size=4096 --openssl-legacy-provider --no-experimental-fetch" yarn build || { echo "Frontend build failed"; exit 1; }
+  export NODE_ENV=production
+
+  yarn install --frozen-lockfile --prefer-offline
+  NODE_OPTIONS="--max-old-space-size=4096 --openssl-legacy-provider --no-experimental-fetch" \
+    yarn build || { echo "Frontend build failed"; exit 1; }
+
   cp -r dist/* /app/frontend
   step_end "Frontend Built"
   
